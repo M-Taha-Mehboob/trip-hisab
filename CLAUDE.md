@@ -1,0 +1,31 @@
+# CLAUDE.md
+
+Trip Hisab: PWA for a friends' trip group (expenses, Group Fund, equal split, settle up). PKR whole rupees. See README.md for rules, data model and commands. Reference stack/style: `D:\Projects\ExpenseApp`.
+
+## Working with the user
+- Talk in Roman Urdu, the way the user writes; tech terms in plain English. They prefer answering in chat, not multiple-choice prompts.
+- Before code edits, list the changes once and ask "kardun?".
+- They run SQL themselves in the Supabase SQL Editor: write migrations, never run them against a database.
+- Never ask for keys in chat; they edit `.env.local` themselves. Never commit `.env*.local`.
+- Ask before creating a GitHub repo, pushing, or deploying.
+
+## Domain rules
+- Never call the Group Fund "Kitty".
+- Split is always equal among all trip members; no per-expense split. Leftover rupees go to the first members by `sort_order`.
+- Balance = contributions + paid from own pocket − share; the fund holder also subtracts unspent fund cash. Sum = 0.
+- Settle up: greedy max-creditor / max-debtor; ties by bigger original balance, then `sort_order`. Paid transfers are stored (`settlements`), open ones computed.
+- All maths in `src/lib/hisab.ts` (pure, no imports so `npm test` runs it in Node). Keep `tests/hisab.test.ts` passing: the mockup numbers (Ali→Hamza 10,000, Bilal→Usman 2,000, Saad→Usman 2,000, Fahad→Aap 2,000) must not change.
+- Roles per trip: admin writes, member is read-only but sees everything. UI hides admin actions; RLS enforces it.
+- Categories: fuel, hotel, khana, jeep, toll, other (`src/lib/categories.ts`).
+
+## Layout
+- `src/data/types.ts` row types (mirror the SQL). `src/data/store.ts` phase-1 mock store (localStorage) and ALL write actions; `src/data/hooks.ts` `useTripView()` builds summary/plan/me/isAdmin. Phase 3 replaces the store with Dexie + outbox sync without changing pages much.
+- `src/data/mock.ts` sample trips (mockup numbers).
+- `src/pages/*` one component per route; `src/components/TripLayout.tsx` trip header + bottom nav (Home / Kharche / Group Fund / Hisab). Routes: `/`, `/trip/:id`, `/trip/:id/kharche`, `/fund`, `/hisab`, `/hisab/settle`, `/trip/:id/kharcha/new|:expenseId`.
+- Styling: only semantic tokens from `src/index.css` (`bg-card`, `text-ink-2`, `bg-primary`, `text-hero-text`, `bg-fund`, `ok`/`danger`...). Teal primary `#0F6E56`, hero text `#E1F5EE`, Group Fund purple `#534AB7`. Shared class strings in `src/components/styles.ts`, small shared UI in `src/components/ui.tsx`. Icons: lucide-react. Font: Plus Jakarta Sans (bundled).
+- Money: `formatPKR` / `formatSigned` in `src/lib/format.ts`. Receipt compression: `src/lib/image.ts` (~200 KB JPEG).
+- Schema changes: new numbered file in `supabase/migrations/` (never edit one the user already ran).
+- Dev server port 5174 (strict; IndexedDB is per origin). Icons: `scripts/make-icons.cjs`.
+
+## Check before finishing
+`npm test`, `npm run build` (runs `tsc -b`) and `npm run lint` must pass.

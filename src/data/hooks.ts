@@ -1,0 +1,62 @@
+import { useMemo, useSyncExternalStore } from 'react'
+import { remainingBalance, settlePlan, summarize, type MemberBalance, type Transfer, type TripSummary } from '../lib/hisab'
+import { currentUserId, useStore } from './store'
+import type { Settlement, TripData, TripMember } from './types'
+
+export const useTrips = () => useStore((s) => s.trips)
+
+export interface TripView {
+  data: TripData
+  summary: TripSummary
+  /** The signed-in user's member row (undefined if they are not in this trip). */
+  me: TripMember | undefined
+  myBalance: MemberBalance | undefined
+  /** My balance after the transfers already marked Paid. */
+  myRemaining: number
+  isAdmin: boolean
+  holder: TripMember | undefined
+  member: (id: string | null) => TripMember | undefined
+  plan: { paid: Settlement[]; open: Transfer[] }
+}
+
+export function buildTripView(data: TripData, viewAsMember: boolean): TripView {
+  const summary = summarize({
+    members: data.members,
+    expenses: data.expenses,
+    contributions: data.contributions,
+    fundHolderMemberId: data.trip.fund_holder_member_id,
+  })
+  const me = data.members.find((m) => m.user_id === currentUserId)
+  const myBalance = summary.balances.find((b) => b.memberId === me?.id)
+  const byId = new Map(data.members.map((m) => [m.id, m]))
+  return {
+    data,
+    summary,
+    me,
+    myBalance,
+    myRemaining: myBalance ? remainingBalance(myBalance, data.settlements) : 0,
+    isAdmin: me?.role === 'admin' && !viewAsMember,
+    holder: byId.get(data.trip.fund_holder_member_id ?? ''),
+    member: (id) => (id ? byId.get(id) : undefined),
+    plan: settlePlan(summary.balances, data.members, data.settlements),
+  }
+}
+
+export function useTripView(tripId: string | undefined): TripView | undefined {
+  const data = useStore((s) => s.trips.find((d) => d.trip.id === tripId))
+  const viewAsMember = useStore((s) => s.viewAsMember)
+  return useMemo(() => (data ? buildTripView(data, viewAsMember) : undefined), [data, viewAsMember])
+}
+
+export const useViewAsMember = () => useStore((s) => s.viewAsMember)
+
+function subscribeOnline(cb: () => void) {
+  window.addEventListener('online', cb)
+  window.addEventListener('offline', cb)
+  return () => {
+    window.removeEventListener('online', cb)
+    window.removeEventListener('offline', cb)
+  }
+}
+
+export const useOnline = () => useSyncExternalStore(subscribeOnline, () => navigator.onLine)

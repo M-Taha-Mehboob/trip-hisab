@@ -1,0 +1,106 @@
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+
+/*
+ * Theme tokens. Components use only these semantic names (bg-card, text-ink-2, bg-primary, bg-fund...),
+ * never raw Tailwind palette colours, so the theme (and a dark mode later) changes in one place.
+ * Teal primary #0F6E56 with light text #E1F5EE; Group Fund accent purple #534AB7.
+ */
+:root {
+  color-scheme: light;
+  --surface: #f3f7f5;
+  --card: #ffffff;
+  --card-2: #edf3f0;
+  --ink: #0f1f1a;
+  --ink-2: #4a5c56;
+  --ink-3: #87958f;
+  --line: #e1e9e5;
+
+  --primary: #0f6e56;
+  --primary-strong: #0a4f3e;
+  --primary-text: #0f6e56;
+  --primary-soft: #e1f5ee;
+  --on-primary: #ffffff;
+  /* Text on the teal hero cards */
+  --hero-text: #e1f5ee;
+
+  --fund: #534ab7;
+  --fund-strong: #3f3793;
+  --fund-soft: #eeedfa;
+
+  --ok: #12804f;
+  --ok-soft: #e3f6ec;
+  --warn: #b45309;
+  --warn-soft: #fff6e5;
+  --danger: #c8372d;
+  --danger-soft: #fdecea;
+
+  /* Category icon circles: tint + icon colour */
+  --cat-fuel: #c2410c;
+  --cat-fuel-soft: #fff0e6;
+  --cat-hotel: #1d5fbf;
+  --cat-hotel-soft: #e7f0fd;
+  --cat-khana: #b7791f;
+  --cat-khana-soft: #fdf4e3;
+  --cat-jeep: #0f6e56;
+  --cat-jeep-soft: #e1f5ee;
+  --cat-toll: #6b4fbf;
+  --cat-toll-soft: #f0ecfb;
+  --cat-other: #5b6770;
+  --cat-other-soft: #eef1f3;
+
+  --shadow: 0 1px 2px rgb(15 31 26 / 0.04), 0 6px 20px -6px rgb(15 31 26 / 0.1);
+}
+
+@theme inline {
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-line: var(--line);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-text: var(--primary-text);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-hero-text: var(--hero-text);
+  --color-fund: var(--fund);
+  --color-fund-strong: var(--fund-strong);
+  --color-fund-soft: var(--fund-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --shadow-card: var(--shadow);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-surface font-sans text-ink antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* iOS Safari: date inputs ignore width:100% and spill out of grids (same fix as ExpenseApp). */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.875rem;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+}
