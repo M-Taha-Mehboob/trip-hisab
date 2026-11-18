@@ -24,6 +24,9 @@ export function themeForTime(date: Date): ThemeName {
 /** Status-bar colour per theme (matches each theme's --surface). */
 const BAR_COLOR: Record<ThemeName, string> = { glacier: '#f2f7fb', sunset: '#fff7f0', night: '#0e1330' }
 
+/** The app icon drawn in this theme's colours (public/, made by scripts/make-icons.cjs). */
+export const themeIcon = (theme: ThemeName) => `/favicon-${theme}.svg`
+
 const KEY = 'trip-hisab:theme'
 const listeners = new Set<() => void>()
 
@@ -43,6 +46,8 @@ function apply() {
   const root = document.documentElement
   if (root.dataset.theme !== current) root.dataset.theme = current
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', BAR_COLOR[current])
+  // Browser-tab icon follows the theme (the installed home-screen icon can't change; it shows all three).
+  document.querySelector('link[rel="icon"]')?.setAttribute('href', themeIcon(current))
 }
 
 function update() {

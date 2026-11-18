@@ -13,7 +13,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'favicon-glacier.svg', 'favicon-sunset.svg', 'favicon-night.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Trip Hisab',
         short_name: 'Trip Hisab',

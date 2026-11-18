@@ -3,7 +3,7 @@ import { Navigate, useSearchParams } from 'react-router'
 import { useAuth } from '../auth/context'
 import { cardClass } from '../components/styles'
 import { Scenery } from '../components/TripHero'
-import { useTheme } from '../theme/theme'
+import { themeIcon, useTheme } from '../theme/theme'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 const OAUTH_ERROR_KEYS = ['error', 'error_code', 'error_description']
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
       <div className="relative mx-auto flex min-h-full max-w-sm flex-col justify-center gap-6 px-6 py-10">
         <div className="text-center text-hero-text">
-          <img src="/favicon.svg" alt="" className="mx-auto mb-3 h-20 w-20 rounded-[1.4rem] shadow-lg ring-4 ring-white/20" />
+          <img src={themeIcon(theme)} alt="" className="mx-auto mb-3 h-20 w-20 rounded-[1.4rem] shadow-lg ring-4 ring-white/20" />
           <h1 className="text-3xl font-extrabold tracking-tight text-hero-ink">Trip Hisab</h1>
           <p className="mt-1 text-sm font-medium">Trip ka kharcha, Group Fund aur hisab — sab ek jagah</p>
         </div>
