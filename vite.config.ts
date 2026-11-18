@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'Trip Hisab',
         short_name: 'Trip Hisab',
         description: 'Dosto ki trip ka kharcha, Group Fund aur hisab (PKR)',
-        theme_color: '#0f6e56',
+        theme_color: '#1f5c91',
         background_color: '#f3f7f5',
         display: 'standalone',
         orientation: 'portrait',

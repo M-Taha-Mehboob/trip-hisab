@@ -4,6 +4,9 @@ import { BrowserRouter } from 'react-router'
 import App from './App.tsx'
 import AuthProvider from './auth/AuthProvider.tsx'
 import './index.css'
+import { startTheme } from './theme/theme.ts'
+
+startTheme()
 
 // Amount fields: select the whole value on focus so typing replaces it.
 // Deferred a tick because iOS Safari / Chrome clear the selection on tap.

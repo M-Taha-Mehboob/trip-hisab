@@ -1,35 +1,58 @@
 @import "tailwindcss";
-@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/bricolage-grotesque";
 
 /*
  * Theme tokens. Components use only these semantic names (bg-card, text-ink-2, bg-primary, bg-fund...),
- * never raw Tailwind palette colours, so the theme (and a dark mode later) changes in one place.
- * Teal primary #0F6E56 with light text #E1F5EE; Group Fund accent purple #534AB7.
+ * never raw Tailwind palette colours. Three themes, picked by time of day (src/theme/theme.ts) or in
+ * Settings, set as <html data-theme="glacier|sunset|night">:
+ *   glacier  day      icy blue mountains, navy ink, amber accent
+ *   sunset   evening  orange sky, plum mountains, coral primary
+ *   night    night    starry navy, snow peak, mint aurora
+ * The hero scenery itself is drawn in src/components/TripHero.tsx.
  */
-:root {
+:root,
+:root[data-theme="glacier"] {
   color-scheme: light;
-  --surface: #f3f7f5;
+  --surface: #f2f7fb;
   --card: #ffffff;
-  --card-2: #edf3f0;
-  --ink: #0f1f1a;
-  --ink-2: #4a5c56;
-  --ink-3: #87958f;
-  --line: #e1e9e5;
+  --card-2: #eaf2f9;
+  --ink: #0c2a47;
+  --ink-2: #45617d;
+  --ink-3: #8099b0;
+  --line: #dce8f2;
 
-  --primary: #0f6e56;
-  --primary-strong: #0a4f3e;
-  --primary-text: #0f6e56;
-  --primary-soft: #e1f5ee;
+  --primary: #2f6fa6;
+  --primary-strong: #0c2a47;
+  --primary-text: #1f5c91;
+  --primary-soft: #e3effa;
   --on-primary: #ffffff;
-  /* Text on the teal hero cards */
-  --hero-text: #e1f5ee;
+
+  --accent: #ef9f27;
+  --accent-soft: #faeeda;
+  --accent-ink: #854f0b;
+
+  --hero-bg: linear-gradient(180deg, #b9d9f1 0%, #d7eaf8 55%, #e6f1fa 100%);
+  --hero-ink: #0c2a47;
+  --hero-text: #2c4f70;
+  --hero-chip: rgb(255 255 255 / 0.82);
+  --hero-chip-ink: #0c2a47;
+  --hero-badge: #ef9f27;
+  --hero-badge-ink: #412402;
+
+  --nav: #0c2a47;
+  --nav-ink: #9bb8d3;
+  --nav-active: rgb(255 255 255 / 0.12);
+  --nav-active-ink: #fac775;
 
   --fund: #534ab7;
   --fund-strong: #3f3793;
   --fund-soft: #eeedfa;
+  --on-fund: #ffffff;
+  --fund-hero: linear-gradient(135deg, #534ab7, #2e2878);
 
   --ok: #12804f;
   --ok-soft: #e3f6ec;
+  --on-ok: #ffffff;
   --warn: #b45309;
   --warn-soft: #fff6e5;
   --danger: #c8372d;
@@ -49,11 +72,140 @@
   --cat-other: #5b6770;
   --cat-other-soft: #eef1f3;
 
-  --shadow: 0 1px 2px rgb(15 31 26 / 0.04), 0 6px 20px -6px rgb(15 31 26 / 0.1);
+  --shadow: 0 1px 2px rgb(12 42 71 / 0.05), 0 8px 24px -8px rgb(12 42 71 / 0.14);
+  --ticket-border: solid;
+}
+
+:root[data-theme="sunset"] {
+  color-scheme: light;
+  --surface: #fff7f0;
+  --card: #ffffff;
+  --card-2: #fdeee4;
+  --ink: #3a1a40;
+  --ink-2: #7a4d5e;
+  --ink-3: #a98893;
+  --line: #f3ddd0;
+
+  --primary: #d85a30;
+  --primary-strong: #9a3412;
+  --primary-text: #b4441e;
+  --primary-soft: #fde3d3;
+  --on-primary: #ffffff;
+
+  --accent: #b5466b;
+  --accent-soft: #fbe5ee;
+  --accent-ink: #72243e;
+
+  --hero-bg: linear-gradient(180deg, #e46f4f 0%, #f39466 40%, #f8b98c 100%);
+  --hero-ink: #3a1a40;
+  --hero-text: #5e2a45;
+  --hero-chip: rgb(58 26 64 / 0.88);
+  --hero-chip-ink: #ffe2b8;
+  --hero-badge: #3a1a40;
+  --hero-badge-ink: #ffe2b8;
+
+  --nav: #3a1a40;
+  --nav-ink: #d9b8c9;
+  --nav-active: rgb(255 255 255 / 0.12);
+  --nav-active-ink: #ffe2b8;
+
+  --fund: #7b3fa8;
+  --fund-strong: #5a2a80;
+  --fund-soft: #f3e8fa;
+  --on-fund: #ffffff;
+  --fund-hero: linear-gradient(135deg, #7b3fa8, #3a1a40);
+
+  --ok: #12804f;
+  --ok-soft: #e3f6ec;
+  --on-ok: #ffffff;
+  --warn: #b45309;
+  --warn-soft: #fff1dd;
+  --danger: #c8372d;
+  --danger-soft: #fdecea;
+
+  --cat-fuel: #c2410c;
+  --cat-fuel-soft: #fff0e6;
+  --cat-hotel: #1d5fbf;
+  --cat-hotel-soft: #e7f0fd;
+  --cat-khana: #b7791f;
+  --cat-khana-soft: #fdf4e3;
+  --cat-jeep: #0f6e56;
+  --cat-jeep-soft: #e1f5ee;
+  --cat-toll: #9a3a6a;
+  --cat-toll-soft: #fbe5ee;
+  --cat-other: #6b5a62;
+  --cat-other-soft: #f4eef0;
+
+  --shadow: 0 1px 2px rgb(58 26 64 / 0.05), 0 8px 24px -8px rgb(58 26 64 / 0.16);
+  --ticket-border: dashed;
+}
+
+:root[data-theme="night"] {
+  color-scheme: dark;
+  --surface: #0e1330;
+  --card: #1a2150;
+  --card-2: #222a5e;
+  --ink: #e6ebff;
+  --ink-2: #b0b9e8;
+  --ink-3: #7c86bc;
+  --line: #2a3370;
+
+  --primary: #5dcaa5;
+  --primary-strong: #1d9e75;
+  --primary-text: #6fd8b4;
+  --primary-soft: #123d33;
+  --on-primary: #04342c;
+
+  --accent: #5dcaa5;
+  --accent-soft: #123d33;
+  --accent-ink: #9fe1cb;
+
+  --hero-bg: linear-gradient(180deg, #0b1030 0%, #18205a 60%, #232b6b 100%);
+  --hero-ink: #ffffff;
+  --hero-text: #c9d2ff;
+  --hero-chip: rgb(255 255 255 / 0.1);
+  --hero-chip-ink: #e6ebff;
+  --hero-badge: #5dcaa5;
+  --hero-badge-ink: #04342c;
+
+  --nav: #1a2150;
+  --nav-ink: #8c95c8;
+  --nav-active: #123d33;
+  --nav-active-ink: #6fd8b4;
+
+  --fund: #a49cf5;
+  --fund-strong: #7f77dd;
+  --fund-soft: #2a2766;
+  --on-fund: #1a1640;
+  --fund-hero: linear-gradient(135deg, #3f3793, #1c1850);
+
+  --ok: #5dcaa5;
+  --ok-soft: #123d33;
+  --on-ok: #04342c;
+  --warn: #fac775;
+  --warn-soft: #3a2e14;
+  --danger: #f59a9a;
+  --danger-soft: #3d1a24;
+
+  --cat-fuel: #f0997b;
+  --cat-fuel-soft: #3a2018;
+  --cat-hotel: #85b7eb;
+  --cat-hotel-soft: #15284a;
+  --cat-khana: #fac775;
+  --cat-khana-soft: #3a2e14;
+  --cat-jeep: #5dcaa5;
+  --cat-jeep-soft: #123d33;
+  --cat-toll: #c3b8ff;
+  --cat-toll-soft: #2a2766;
+  --cat-other: #b4b2c9;
+  --cat-other-soft: #262b52;
+
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px -10px rgb(0 0 0 / 0.55);
+  --ticket-border: solid;
 }
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-sans: "Bricolage Grotesque Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --color-surface: var(--surface);
   --color-card: var(--card);
@@ -68,6 +220,20 @@
   --color-primary-soft: var(--primary-soft);
   --color-on-primary: var(--on-primary);
   --color-hero-text: var(--hero-text);
+  --color-hero-ink: var(--hero-ink);
+  --color-hero-chip: var(--hero-chip);
+  --color-hero-chip-ink: var(--hero-chip-ink);
+  --color-hero-badge: var(--hero-badge);
+  --color-hero-badge-ink: var(--hero-badge-ink);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-nav: var(--nav);
+  --color-nav-ink: var(--nav-ink);
+  --color-nav-active: var(--nav-active);
+  --color-nav-active-ink: var(--nav-active-ink);
+  --color-on-fund: var(--on-fund);
+  --color-on-ok: var(--on-ok);
   --color-fund: var(--fund);
   --color-fund-strong: var(--fund-strong);
   --color-fund-soft: var(--fund-soft);
@@ -103,4 +269,22 @@ input[type="date"] {
 }
 input[type="date"]::-webkit-date-and-time-value {
   text-align: left;
+}
+
+/* Hero backgrounds (gradients can't be Tailwind colour tokens). */
+.bg-hero {
+  background: var(--hero-bg);
+}
+.bg-fund-hero {
+  background: var(--fund-hero);
+}
+
+/* Expense lists read like a strip of tickets in the sunset theme (dashed dividers). */
+.ticket-list > * {
+  border-style: var(--ticket-border);
+}
+
+/* Smooth hand-over when the theme changes with the time of day. */
+body {
+  transition: background-color 0.6s ease, color 0.6s ease;
 }

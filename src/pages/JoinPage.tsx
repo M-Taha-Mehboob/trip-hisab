@@ -2,6 +2,7 @@ import { UserPlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { buttonPrimary, buttonSecondary, cardClass } from '../components/styles'
+import TripHero from '../components/TripHero'
 import { Avatar, FullScreenMessage } from '../components/ui'
 import { useOnline } from '../data/hooks'
 import { useSession } from '../data/session'
@@ -87,11 +88,11 @@ export default function JoinPage() {
 
   return (
     <div className="mx-auto min-h-full max-w-xl px-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-10">
-      <div className="rounded-3xl bg-linear-to-br from-primary to-primary-strong p-5 text-hero-text shadow-card">
-        <div className="text-sm opacity-80">Aap ko bulaya gaya hai</div>
-        <div className="mt-1 text-2xl font-extrabold text-white">{preview.tripName}</div>
-        <div className="mt-2 text-sm opacity-80">Login: {user.email}</div>
-      </div>
+      <TripHero className="p-5">
+        <div className="text-sm">Aap ko bulaya gaya hai</div>
+        <div className="mt-1 text-2xl font-extrabold tracking-tight text-hero-ink">{preview.tripName}</div>
+        <div className="mt-16 inline-block rounded-xl bg-hero-chip px-3 py-1.5 text-sm text-hero-chip-ink backdrop-blur-sm">Login: {user.email}</div>
+      </TripHero>
 
       {preview.alreadyMember ? (
         <div className={`${cardClass} mt-4 space-y-3 p-5`}>

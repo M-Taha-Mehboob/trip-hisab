@@ -52,7 +52,7 @@ export default function ExpensesPage() {
               <span>{formatShortDate(day)}</span>
               <span>{formatPKR(items.reduce((s, e) => s + e.amount, 0))}</span>
             </div>
-            <ul className={`${cardClass} divide-y divide-line overflow-hidden`}>
+            <ul className={`${cardClass} ticket-list divide-y divide-line overflow-hidden`}>
               {items.map((e) => (
                 <li key={e.id}>
                   <ExpenseRow expense={e} payer={view.member(e.paid_by_member_id)} to={`/trip/${tripId}/kharcha/${e.id}`} />

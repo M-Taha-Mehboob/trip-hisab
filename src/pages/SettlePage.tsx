@@ -80,7 +80,7 @@ export default function SettlePage() {
                   onClick={() => toggleSettlement(data.trip.id, r.from, r.to, r.amount, r.settlementId)}
                   aria-pressed={paid}
                   className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm font-semibold transition disabled:opacity-100 ${
-                    paid ? 'border-ok bg-ok text-white' : 'border-line bg-card text-ink-2'
+                    paid ? 'border-ok bg-ok text-on-ok' : 'border-line bg-card text-ink-2'
                   }`}
                 >
                   {paid && <Check size={15} />} Paid

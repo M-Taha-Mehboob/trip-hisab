@@ -22,7 +22,7 @@ export default function FundPage() {
 
   return (
     <>
-      <section className="rounded-3xl bg-linear-to-br from-fund to-fund-strong p-5 text-white shadow-card">
+      <section className="rounded-[1.75rem] bg-fund-hero p-5 text-white shadow-card">
         <div className="text-sm opacity-80">Baqi cash</div>
         <div className="text-4xl font-extrabold tracking-tight tabular-nums">{formatPKR(summary.fundLeft)}</div>
         <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-white/12 px-3 py-2.5">

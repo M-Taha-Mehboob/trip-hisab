@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Trip Hisab: PWA for a friends' trip group (expenses, Group Fund, equal split, settle up). PKR whole rupees. See README.md for rules, data model and commands. Reference stack/style: `D:\Projects\ExpenseApp`.
+Trip Hisab: PWA (live at https://trip-hisab.pages.dev, Cloudflare Pages auto-deploys `main`) for a friends' trip group (expenses, Group Fund, equal split, settle up). PKR whole rupees. See README.md for rules, data model and commands. Reference stack/style: `D:\Projects\ExpenseApp`.
 
 ## Working with the user
 - Talk in Roman Urdu, the way the user writes; tech terms in plain English. They prefer answering in chat, not multiple-choice prompts.
@@ -24,7 +24,7 @@ Trip Hisab: PWA for a friends' trip group (expenses, Group Fund, equal split, se
 - Auth: Google only (`src/auth/AuthProvider.tsx`, PKCE). Invite: `/join/:code` (`invite_preview` / `join_trip` RPCs), share sheet in `src/components/InviteSheet.tsx`.
 - `src/data/mock.ts` sample trip used by the tests only (mockup numbers).
 - `src/pages/*` one component per route; `src/components/TripLayout.tsx` trip header + bottom nav (Home / Kharche / Group Fund / Hisab). Routes: `/login`, `/join/:code`, `/`, `/trip/:id`, `/trip/:id/kharche`, `/fund`, `/hisab`, `/hisab/settle`, `/trip/:id/kharcha/new|:expenseId`.
-- Styling: only semantic tokens from `src/index.css` (`bg-card`, `text-ink-2`, `bg-primary`, `text-hero-text`, `bg-fund`, `ok`/`danger`...). Teal primary `#0F6E56`, hero text `#E1F5EE`, Group Fund purple `#534AB7`. Shared class strings in `src/components/styles.ts`, small shared UI in `src/components/ui.tsx`. Icons: lucide-react. Font: Plus Jakarta Sans (bundled).
+- Styling: only semantic tokens from `src/index.css` (`bg-card`, `text-ink-2`, `bg-primary`, `bg-hero`, `text-hero-ink`, `bg-hero-chip`, `bg-nav`, `bg-fund`, `text-on-fund`, `ok`/`danger`...). Three themes picked by time of day (`src/theme/theme.ts`: Glacier 6:00–16:29, Sunset 16:30–19:29, Night 19:30–5:59; Settings can pin one), set as `<html data-theme>`; every token must be defined in all three. Mountain scenery per theme in `src/components/TripHero.tsx`. Shared class strings in `src/components/styles.ts`, small shared UI in `src/components/ui.tsx`. Icons: lucide-react. Font: Bricolage Grotesque (bundled).
 - Money: `formatPKR` / `formatSigned` in `src/lib/format.ts`. Receipt compression: `src/lib/image.ts` (~200 KB JPEG).
 - Schema changes: new numbered file in `supabase/migrations/` (never edit one the user already ran).
 - Dev server port 5174 (strict; IndexedDB is per origin). Icons: `scripts/make-icons.cjs`.

@@ -4,6 +4,7 @@ import { useViewAsMember } from '../data/hooks'
 import { useSession } from '../data/session'
 import { setViewAsMember } from '../data/store'
 import { useSync } from '../sync/context'
+import { setThemePref, THEMES, useThemePref } from '../theme/theme'
 import Modal from './Modal'
 import { buttonDanger, checkboxClass } from './styles'
 import { UserAvatar } from './UserAvatar'
@@ -14,6 +15,7 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
   const { user } = useSession()
   const { signOut } = useAuth()
   const { pending, lastSyncedAt, error } = useSync()
+  const themePref = useThemePref()
 
   async function logout() {
     const warn = pending
@@ -42,6 +44,26 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
             : lastSyncedAt
               ? `Sab synced · ${lastSyncedAt.toLocaleTimeString('en-PK', { hour: 'numeric', minute: '2-digit' })}`
               : 'Sync ho raha hai…'}
+      </div>
+
+      <div className="mb-4">
+        <div className="mb-1.5 px-1 text-sm font-medium text-ink-2">Theme</div>
+        <div className="grid grid-cols-4 gap-1 rounded-2xl border border-line bg-card-2 p-1">
+          {THEMES.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setThemePref(t.id)}
+              aria-pressed={themePref === t.id}
+              className={`rounded-xl px-1 py-2 text-center transition ${
+                themePref === t.id ? 'bg-card text-ink shadow-sm' : 'text-ink-3'
+              }`}
+            >
+              <span className="block text-sm font-semibold">{t.label}</span>
+              <span className="block text-[11px]">{t.hint}</span>
+            </button>
+          ))}
+        </div>
+        <p className="mt-1.5 px-1 text-xs text-ink-3">Auto: din mein Glacier, 4:30 se Sunset, 7:30 se Raat. Sirf is phone par.</p>
       </div>
 
       <label className="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">

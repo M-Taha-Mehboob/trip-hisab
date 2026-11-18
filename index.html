@@ -5,7 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#f3f7f5" />
+    <meta name="theme-color" content="#f2f7fb" />
+    <script>
+      // Pick the theme before CSS paints (no flash). Same rules as src/theme/theme.ts.
+      try {
+        var p = localStorage.getItem('trip-hisab:theme')
+        var d = new Date(), m = d.getHours() * 60 + d.getMinutes()
+        var t = p === 'glacier' || p === 'sunset' || p === 'night' ? p : m >= 360 && m < 990 ? 'glacier' : m >= 990 && m < 1170 ? 'sunset' : 'night'
+        document.documentElement.dataset.theme = t
+      } catch (e) {}
+    </script>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Trip Hisab" />

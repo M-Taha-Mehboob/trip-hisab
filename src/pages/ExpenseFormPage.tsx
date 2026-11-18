@@ -86,7 +86,7 @@ export default function ExpenseFormPage() {
 
   const segment = (active: boolean, fund: boolean) =>
     `flex-1 rounded-xl py-2.5 text-sm font-semibold transition ${
-      active ? (fund ? 'bg-fund text-white shadow-sm' : 'bg-primary text-on-primary shadow-sm') : 'text-ink-2'
+      active ? (fund ? 'bg-fund text-on-fund shadow-sm' : 'bg-primary text-on-primary shadow-sm') : 'text-ink-2'
     }`
 
   return (

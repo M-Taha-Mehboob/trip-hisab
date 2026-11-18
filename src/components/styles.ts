@@ -22,4 +22,4 @@ export const labelClass = 'mb-1.5 block text-sm font-medium text-ink-2'
 export const checkboxClass = 'h-5 w-5 rounded accent-primary'
 
 /** Purple Group Fund action (Contribution add / save). */
-export const buttonFund = `${buttonBase} bg-fund text-white shadow-sm`
+export const buttonFund = `${buttonBase} bg-fund text-on-fund shadow-sm`

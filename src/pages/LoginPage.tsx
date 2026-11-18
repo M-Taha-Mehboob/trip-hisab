@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 import { useAuth } from '../auth/context'
 import { cardClass } from '../components/styles'
+import { Scenery } from '../components/TripHero'
+import { useTheme } from '../theme/theme'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 const OAUTH_ERROR_KEYS = ['error', 'error_code', 'error_description']
@@ -28,6 +30,7 @@ function parseNext(params: URLSearchParams) {
 
 export default function LoginPage() {
   const { user, loading, signInWithGoogle } = useAuth()
+  const theme = useTheme()
   const [params] = useSearchParams()
   const parsed = parseNext(params)
   const next = parsed.next
@@ -50,14 +53,15 @@ export default function LoginPage() {
 
   return (
     <div className="relative min-h-full overflow-hidden">
-      <div className="absolute inset-x-0 top-0 h-80 rounded-b-[2.5rem] bg-linear-to-br from-primary to-primary-strong" />
-      <div className="absolute -top-16 -right-16 h-56 w-56 rounded-full bg-white/10" />
+      <div className="absolute inset-x-0 top-0 h-96 overflow-hidden rounded-b-[2.5rem] bg-hero">
+        <Scenery theme={theme} className="absolute inset-x-0 bottom-0 h-3/5 w-full" />
+      </div>
 
       <div className="relative mx-auto flex min-h-full max-w-sm flex-col justify-center gap-6 px-6 py-10">
         <div className="text-center text-hero-text">
           <img src="/favicon.svg" alt="" className="mx-auto mb-3 h-20 w-20 rounded-[1.4rem] shadow-lg ring-4 ring-white/20" />
-          <h1 className="text-2xl font-extrabold tracking-tight text-white">Trip Hisab</h1>
-          <p className="mt-1 text-sm opacity-85">Trip ka kharcha, Group Fund aur hisab — sab ek jagah</p>
+          <h1 className="text-3xl font-extrabold tracking-tight text-hero-ink">Trip Hisab</h1>
+          <p className="mt-1 text-sm font-medium">Trip ka kharcha, Group Fund aur hisab — sab ek jagah</p>
         </div>
 
         <div className={`${cardClass} space-y-4 p-5`}>

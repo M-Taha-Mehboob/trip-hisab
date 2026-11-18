@@ -54,15 +54,15 @@ export default function TripLayout() {
         <Outlet />
       </main>
       <nav className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
-        <ul className="mx-auto grid max-w-xl grid-cols-4 gap-1 rounded-2xl border border-line bg-card/90 p-1.5 shadow-card backdrop-blur-md">
+        <ul className="mx-auto grid max-w-xl grid-cols-4 gap-1 rounded-full bg-nav p-1.5 shadow-card">
           {tabs.map(({ to, label, icon: Icon, end }) => (
             <li key={label}>
               <NavLink
                 to={`/trip/${tripId}${to ? `/${to}` : ''}`}
                 end={end}
                 className={({ isActive }) =>
-                  `flex flex-col items-center gap-0.5 rounded-xl py-1.5 text-[11px] font-semibold transition ${
-                    isActive ? 'bg-primary-soft text-primary-text' : 'text-ink-3'
+                  `flex flex-col items-center gap-0.5 rounded-full py-1.5 text-[11px] font-semibold transition ${
+                    isActive ? 'bg-nav-active text-nav-active-ink' : 'text-nav-ink'
                   }`
                 }
               >

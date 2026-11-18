@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router'
 import Modal from '../components/Modal'
 import SettingsSheet from '../components/SettingsSheet'
 import { buttonPrimary, cardClass, inputClass, labelClass } from '../components/styles'
+import TripHero from '../components/TripHero'
 import { SyncPill } from '../components/ui'
 import { UserAvatar } from '../components/UserAvatar'
 import { useTripViews } from '../data/hooks'
@@ -43,30 +44,28 @@ export default function HomePage() {
         const { trip } = v.data
         const bal = v.myRemaining
         return (
-          <Link
-            key={trip.id}
-            to={`/trip/${trip.id}`}
-            className="mt-4 block rounded-3xl bg-linear-to-br from-primary to-primary-strong p-5 text-hero-text shadow-card active:scale-[0.99]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-semibold">Active trip</span>
-              <span className="flex items-center gap-1 text-xs opacity-80">
-                <Users size={14} /> {v.summary.memberCount} members
-              </span>
-            </div>
-            <div className="mt-3 text-xl font-bold text-white">{trip.name}</div>
-            <div className="text-sm opacity-75">{formatDateRange(trip.start_date, trip.end_date)}</div>
-            <div className="mt-5 text-sm opacity-80">Total kharcha</div>
-            <div className="text-4xl font-extrabold tracking-tight text-white tabular-nums">{formatPKR(v.summary.total)}</div>
-            <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/12 px-4 py-3">
-              <span className="text-sm">
-                {bal > 0 ? 'Aap ko milenge' : bal < 0 ? 'Aap ne dene hain' : 'Aapka hisab barabar'}
-              </span>
-              <span className="flex items-center gap-1 text-lg font-bold text-white tabular-nums">
-                {bal !== 0 && formatPKR(Math.abs(bal))}
-                <ChevronRight size={18} className="opacity-70" />
-              </span>
-            </div>
+          <Link key={trip.id} to={`/trip/${trip.id}`} className="mt-4 block active:scale-[0.99]">
+            <TripHero className="p-5">
+              <div className="flex items-center justify-between">
+                <span className="rounded-full bg-hero-badge px-2.5 py-1 text-xs font-semibold text-hero-badge-ink">Active safar</span>
+                <span className="flex items-center gap-1 text-xs font-medium">
+                  <Users size={14} /> {v.summary.memberCount} log
+                </span>
+              </div>
+              <div className="mt-3 text-2xl font-extrabold tracking-tight text-hero-ink">{trip.name}</div>
+              <div className="text-sm">{formatDateRange(trip.start_date, trip.end_date)}</div>
+              <div className="mt-4 text-sm">Total kharcha</div>
+              <div className="text-4xl font-extrabold tracking-tight text-hero-ink tabular-nums">{formatPKR(v.summary.total)}</div>
+              <div className="mt-24 flex items-center justify-between rounded-2xl bg-hero-chip px-4 py-3 text-hero-chip-ink backdrop-blur-sm">
+                <span className="text-sm">
+                  {bal > 0 ? 'Aap ko milenge' : bal < 0 ? 'Aap ne dene hain' : 'Aapka hisab barabar'}
+                </span>
+                <span className="flex items-center gap-1 text-lg font-bold tabular-nums">
+                  {bal !== 0 && formatPKR(Math.abs(bal))}
+                  <ChevronRight size={18} className="opacity-70" />
+                </span>
+              </div>
+            </TripHero>
           </Link>
         )
       })}
