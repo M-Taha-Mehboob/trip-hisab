@@ -7,7 +7,7 @@ PWA for a group of friends on a trip: record expenses, keep an upfront **Group F
 - React 19 + Vite + TypeScript, Tailwind CSS v4, React Router
 - vite-plugin-pwa (manifest + auto-updating service worker)
 - Supabase (Postgres + Google Auth + RLS + private Storage for receipts)
-- Dexie (IndexedDB) offline cache + outbox *(phase 3)*
+- Dexie (IndexedDB) offline copy; changes upload when online (sync badge shows what is left)
 - Hosting: Cloudflare Pages *(phase 3)*
 
 ## Money rules
@@ -53,4 +53,5 @@ npm run preview   # serve dist/ (test the service worker / install here)
 
 1. Scaffold, theme, all 6 screens on mock data, hisab logic + tests *(done)*
 2. Supabase schema / RLS / storage SQL + Google OAuth guide *(done, user runs it)*
-3. Google login, real data via Dexie + outbox sync, offline indicator, invite link, receipt upload, Cloudflare Pages deploy
+3. Google login, real data via Dexie + sync, offline badge, invite link, receipt upload *(done)*; Cloudflare Pages deploy *(next)*
+4. Later: edit members / make admins in the UI, rename/delete trip, dark mode

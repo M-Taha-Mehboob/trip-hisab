@@ -1,9 +1,8 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { remainingBalance, settlePlan, summarize, type MemberBalance, type Transfer, type TripSummary } from '../lib/hisab'
-import { currentUserId, useStore } from './store'
+import { useSession, useTripsData } from './session'
+import { useViewAsMemberPref } from './store'
 import type { Settlement, TripData, TripMember } from './types'
-
-export const useTrips = () => useStore((s) => s.trips)
 
 export interface TripView {
   data: TripData
@@ -19,14 +18,14 @@ export interface TripView {
   plan: { paid: Settlement[]; open: Transfer[] }
 }
 
-export function buildTripView(data: TripData, viewAsMember: boolean): TripView {
+export function buildTripView(data: TripData, userId: string, viewAsMember: boolean): TripView {
   const summary = summarize({
     members: data.members,
     expenses: data.expenses,
     contributions: data.contributions,
     fundHolderMemberId: data.trip.fund_holder_member_id,
   })
-  const me = data.members.find((m) => m.user_id === currentUserId)
+  const me = data.members.find((m) => m.user_id === userId)
   const myBalance = summary.balances.find((b) => b.memberId === me?.id)
   const byId = new Map(data.members.map((m) => [m.id, m]))
   return {
@@ -42,13 +41,22 @@ export function buildTripView(data: TripData, viewAsMember: boolean): TripView {
   }
 }
 
-export function useTripView(tripId: string | undefined): TripView | undefined {
-  const data = useStore((s) => s.trips.find((d) => d.trip.id === tripId))
-  const viewAsMember = useStore((s) => s.viewAsMember)
-  return useMemo(() => (data ? buildTripView(data, viewAsMember) : undefined), [data, viewAsMember])
+/** Every trip on this phone, newest first. */
+export function useTripViews(): TripView[] {
+  const trips = useTripsData()
+  const { userId } = useSession()
+  const viewAsMember = useViewAsMemberPref()
+  return useMemo(() => trips.map((d) => buildTripView(d, userId, viewAsMember)), [trips, userId, viewAsMember])
 }
 
-export const useViewAsMember = () => useStore((s) => s.viewAsMember)
+export function useTripView(tripId: string | undefined): TripView | undefined {
+  const data = useTripsData().find((d) => d.trip.id === tripId)
+  const { userId } = useSession()
+  const viewAsMember = useViewAsMemberPref()
+  return useMemo(() => (data ? buildTripView(data, userId, viewAsMember) : undefined), [data, userId, viewAsMember])
+}
+
+export const useViewAsMember = useViewAsMemberPref
 
 function subscribeOnline(cb: () => void) {
   window.addEventListener('online', cb)

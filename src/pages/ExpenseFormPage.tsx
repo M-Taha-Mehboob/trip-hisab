@@ -2,13 +2,15 @@ import { Camera, Trash2, X } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { buttonDanger, buttonPrimary, inputClass, labelClass } from '../components/styles'
+import ReceiptPhoto from '../components/ReceiptPhoto'
 import { Avatar } from '../components/ui'
 import { useTripView } from '../data/hooks'
 import { deleteExpense, saveExpense } from '../data/store'
 import type { Category } from '../data/types'
 import { CATEGORIES } from '../lib/categories'
 import { formatNumber, formatPKR, parseAmount, todayISO } from '../lib/format'
-import { blobToDataUrl, compressImage } from '../lib/image'
+import { compressImage } from '../lib/image'
+import { objectUrlFor } from '../lib/objectUrl'
 
 /** Naya kharcha (admin) / edit, and the read-only detail view for members. */
 export default function ExpenseFormPage() {
@@ -25,8 +27,13 @@ export default function ExpenseFormPage() {
   const [payerId, setPayerId] = useState<string | null>(existing?.paid_by_member_id ?? view?.me?.id ?? null)
   const [date, setDate] = useState(existing?.date ?? todayISO())
   const [note, setNote] = useState(existing?.note ?? '')
-  const [receipt, setReceipt] = useState<string | null>(existing?.receipt_path ?? null)
+  // undefined = keep the saved photo, a Blob = new photo, null = remove it.
+  const [photo, setPhoto] = useState<Blob | null | undefined>(undefined)
+  const photoUrl = objectUrlFor(photo)
+  const savedPath = photo === undefined ? (existing?.receipt_path ?? null) : null
+  const hasPhoto = photo instanceof Blob || savedPath !== null
   const [photoBusy, setPhotoBusy] = useState(false)
+  const [saving, setSaving] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   if (!view || (!isNew && !existing) || (isNew && readOnly)) return <Navigate to={`/trip/${tripId ?? ''}`} replace />
@@ -39,13 +46,13 @@ export default function ExpenseFormPage() {
   // Fund money available for this expense (an edited fund expense gives its old amount back first).
   const fundAvailable = view.summary.fundLeft + (existing && existing.paid_by_member_id === null ? existing.amount : 0)
   const overFund = fromFund && amount !== null && amount > fundAvailable
-  const canSave = !readOnly && amount !== null && amount > 0 && (fromFund || payerId !== null)
+  const canSave = !readOnly && !saving && amount !== null && amount > 0 && (fromFund || payerId !== null)
 
   async function onPhoto(file: File | undefined) {
     if (!file) return
     setPhotoBusy(true)
     try {
-      setReceipt(await blobToDataUrl(await compressImage(file)))
+      setPhoto(await compressImage(file))
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'Photo load nahi hui')
     } finally {
@@ -53,15 +60,22 @@ export default function ExpenseFormPage() {
     }
   }
 
-  function save(e: FormEvent) {
+  async function save(e: FormEvent) {
     e.preventDefault()
     if (!canSave || amount === null) return
-    saveExpense(
-      tripId!,
-      { amount, category, paid_by_member_id: fromFund ? null : payerId, date, note: note.trim(), receipt_path: receipt },
-      existing?.id,
-    )
-    back()
+    setSaving(true)
+    try {
+      await saveExpense(
+        tripId!,
+        { amount, category, paid_by_member_id: fromFund ? null : payerId, date, note: note.trim() },
+        existing?.id,
+        photo,
+      )
+      back()
+    } catch (err) {
+      window.alert(`Save nahi hua: ${err instanceof Error ? err.message : String(err)}`)
+      setSaving(false)
+    }
   }
 
   function remove() {
@@ -189,17 +203,17 @@ export default function ExpenseFormPage() {
           {/* Receipt */}
           <div>
             <div className={labelClass}>Receipt photo</div>
-            {receipt ? (
+            {hasPhoto ? (
               <div className="relative overflow-hidden rounded-2xl border border-line bg-card-2">
-                {receipt.startsWith('data:') ? (
-                  <img src={receipt} alt="Receipt" className="max-h-72 w-full object-contain" />
-                ) : (
-                  <div className="py-10 text-center text-sm text-ink-3">Receipt photo (sample data)</div>
-                )}
+                {photoUrl ? (
+                  <img src={photoUrl} alt="Receipt" className="max-h-72 w-full object-contain" />
+                ) : savedPath ? (
+                  <ReceiptPhoto path={savedPath} />
+                ) : null}
                 {!readOnly && (
                   <button
                     type="button"
-                    onClick={() => setReceipt(null)}
+                    onClick={() => setPhoto(null)}
                     aria-label="Photo hatayen"
                     className="absolute top-2 right-2 grid h-8 w-8 place-items-center rounded-full bg-black/55 text-white"
                   >

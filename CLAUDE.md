@@ -19,9 +19,11 @@ Trip Hisab: PWA for a friends' trip group (expenses, Group Fund, equal split, se
 - Categories: fuel, hotel, khana, jeep, toll, other (`src/lib/categories.ts`).
 
 ## Layout
-- `src/data/types.ts` row types (mirror the SQL). `src/data/store.ts` phase-1 mock store (localStorage) and ALL write actions; `src/data/hooks.ts` `useTripView()` builds summary/plan/me/isAdmin. Phase 3 replaces the store with Dexie + outbox sync without changing pages much.
-- `src/data/mock.ts` sample trips (mockup numbers).
-- `src/pages/*` one component per route; `src/components/TripLayout.tsx` trip header + bottom nav (Home / Kharche / Group Fund / Hisab). Routes: `/`, `/trip/:id`, `/trip/:id/kharche`, `/fund`, `/hisab`, `/hisab/settle`, `/trip/:id/kharcha/new|:expenseId`.
+- `src/data/types.ts` row types (mirror the SQL). `src/data/db.ts` Dexie DB per login (`_dirty` = not uploaded, `_new` = never uploaded, `receipts` = photo queue/cache). `src/data/store.ts` ALL write actions (Dexie first, offline). `src/data/hooks.ts` `useTripView()` / `useTripViews()` build summary/plan/me/isAdmin from `TripsContext` (filled live in `src/auth/RequireAuth.tsx`).
+- `src/sync/sync.ts`: push dirty rows (insert new, update known by id; never send `user_id`/`role` on member updates), upload/delete queued receipts, pull trips in full + each trip's child tables by per-trip keyset cursor. `SyncProvider` runs it on start/online/foreground/after edits/every minute.
+- Auth: Google only (`src/auth/AuthProvider.tsx`, PKCE). Invite: `/join/:code` (`invite_preview` / `join_trip` RPCs), share sheet in `src/components/InviteSheet.tsx`.
+- `src/data/mock.ts` sample trip used by the tests only (mockup numbers).
+- `src/pages/*` one component per route; `src/components/TripLayout.tsx` trip header + bottom nav (Home / Kharche / Group Fund / Hisab). Routes: `/login`, `/join/:code`, `/`, `/trip/:id`, `/trip/:id/kharche`, `/fund`, `/hisab`, `/hisab/settle`, `/trip/:id/kharcha/new|:expenseId`.
 - Styling: only semantic tokens from `src/index.css` (`bg-card`, `text-ink-2`, `bg-primary`, `text-hero-text`, `bg-fund`, `ok`/`danger`...). Teal primary `#0F6E56`, hero text `#E1F5EE`, Group Fund purple `#534AB7`. Shared class strings in `src/components/styles.ts`, small shared UI in `src/components/ui.tsx`. Icons: lucide-react. Font: Plus Jakarta Sans (bundled).
 - Money: `formatPKR` / `formatSigned` in `src/lib/format.ts`. Receipt compression: `src/lib/image.ts` (~200 KB JPEG).
 - Schema changes: new numbered file in `supabase/migrations/` (never edit one the user already ran).

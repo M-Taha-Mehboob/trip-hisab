@@ -1,18 +1,20 @@
 import { ChevronRight, Mountain, Plus, Users } from 'lucide-react'
-import { useMemo, useState, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import Modal from '../components/Modal'
 import SettingsSheet from '../components/SettingsSheet'
 import { buttonPrimary, cardClass, inputClass, labelClass } from '../components/styles'
 import { SyncPill } from '../components/ui'
-import { buildTripView, useTrips, useViewAsMember } from '../data/hooks'
+import { UserAvatar } from '../components/UserAvatar'
+import { useTripViews } from '../data/hooks'
+import { useSession } from '../data/session'
 import { createTrip } from '../data/store'
 import { formatDateRange, formatPKR, todayISO } from '../lib/format'
 
 export default function HomePage() {
-  const trips = useTrips()
-  const viewAsMember = useViewAsMember()
-  const views = useMemo(() => trips.map((d) => buildTripView(d, viewAsMember)), [trips, viewAsMember])
+  const views = useTripViews()
+  const { user } = useSession()
+  const firstName = user.name.split(' ')[0]
   const active = views.filter((v) => v.data.trip.status === 'active')
   const past = views.filter((v) => v.data.trip.status !== 'active')
   const [creating, setCreating] = useState(false)
@@ -22,7 +24,7 @@ export default function HomePage() {
     <div className="mx-auto min-h-full max-w-xl px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-10">
       <header className="flex items-center justify-between py-2">
         <div>
-          <div className="text-sm text-ink-3">Assalam o Alaikum 👋</div>
+          <div className="text-sm text-ink-3">Assalam o Alaikum{firstName ? `, ${firstName}` : ''} 👋</div>
           <h1 className="text-2xl font-extrabold tracking-tight">Trip Hisab</h1>
         </div>
         <div className="flex items-center gap-2">
@@ -30,9 +32,9 @@ export default function HomePage() {
           <button
             onClick={() => setSettingsOpen(true)}
             aria-label="Settings"
-            className="grid h-9 w-9 place-items-center rounded-full border border-line bg-card text-sm font-bold text-primary-text"
+            className="rounded-full ring-2 ring-line"
           >
-            A
+            <UserAvatar size={36} />
           </button>
         </div>
       </header>
@@ -68,6 +70,16 @@ export default function HomePage() {
           </Link>
         )
       })}
+
+      {views.length === 0 && (
+        <div className="mt-6 rounded-3xl border border-dashed border-line bg-card px-5 py-8 text-center">
+          <Mountain size={32} className="mx-auto text-primary-text" />
+          <div className="mt-3 font-bold">Abhi koi trip nahi</div>
+          <p className="mt-1 text-sm text-ink-3">
+            Nayi trip banayen, ya dost ne trip banayi hai to us se WhatsApp par invite link maangein.
+          </p>
+        </div>
+      )}
 
       <button onClick={() => setCreating(true)} className={`${buttonPrimary} mt-4 w-full py-3`}>
         <Plus size={18} /> Nayi trip
@@ -110,20 +122,29 @@ export default function HomePage() {
 
 function NewTripSheet({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate()
+  const { user } = useSession()
   const [name, setName] = useState('')
   const [startDate, setStartDate] = useState(todayISO())
-  const [myName, setMyName] = useState('Aap')
+  const [myName, setMyName] = useState(user.name.split(' ')[0] || '')
   const [members, setMembers] = useState('')
   const memberNames = members
     .split(/[\n,]/)
     .map((s) => s.trim())
     .filter(Boolean)
 
-  function save(e: FormEvent) {
+  const [busy, setBusy] = useState(false)
+
+  async function save(e: FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !myName.trim()) return
-    const id = createTrip({ name: name.trim(), startDate, myName: myName.trim(), memberNames })
-    navigate(`/trip/${id}`)
+    if (!name.trim() || !myName.trim() || busy) return
+    setBusy(true)
+    try {
+      const id = await createTrip({ name: name.trim(), startDate, myName: myName.trim(), myAvatarUrl: user.avatarUrl, memberNames })
+      navigate(`/trip/${id}`)
+    } catch (err) {
+      window.alert(`Trip nahi bani: ${err instanceof Error ? err.message : String(err)}`)
+      setBusy(false)
+    }
   }
 
   return (
@@ -157,7 +178,7 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
             {memberNames.length + 1} members. Ye log invite link se Google login karke apne naam se jud jayenge.
           </p>
         </div>
-        <button className={`${buttonPrimary} w-full py-3`} disabled={!name.trim() || !myName.trim()}>
+        <button className={`${buttonPrimary} w-full py-3`} disabled={!name.trim() || !myName.trim() || busy}>
           Trip banayen
         </button>
       </form>

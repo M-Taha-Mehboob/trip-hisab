@@ -1,9 +1,9 @@
-import { Check, CloudOff, Crown, Image as ImageIcon } from 'lucide-react'
+import { AlertTriangle, Check, CloudOff, CloudUpload, Crown, Image as ImageIcon, RefreshCw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
-import { useOnline } from '../data/hooks'
 import type { Expense, TripMember } from '../data/types'
 import { categoryInfo } from '../lib/categories'
+import { useSync } from '../sync/context'
 import { formatPKR, formatShortDate, formatSigned, initials } from '../lib/format'
 
 /** Round initials badge (Google photo later). `fund` = purple, for the Group Fund holder. */
@@ -21,20 +21,50 @@ export function Avatar({ name, size = 40, fund = false }: { name: string; size?:
   )
 }
 
-/** Offline / Synced pill. Phase 3 adds the outbox count ("Offline · 3"). */
-export function SyncPill({ onDark = false }: { onDark?: boolean }) {
-  const online = useOnline()
-  const tone = onDark
-    ? 'bg-white/15 text-hero-text'
-    : online
-      ? 'bg-ok-soft text-ok'
-      : 'bg-card-2 text-ink-2'
+/** Sync status pill: Offline · 3 / Syncing / 2 baqi / Synced. Tap to sync now (or see the error). */
+export function SyncPill() {
+  const { online, syncing, error, pending, syncNow } = useSync()
+  let label: string
+  let tone: string
+  let icon: ReactNode
+  if (!online) {
+    label = pending ? `Offline · ${pending}` : 'Offline'
+    tone = 'bg-card-2 text-ink-2'
+    icon = <CloudOff size={14} />
+  } else if (syncing) {
+    label = 'Syncing'
+    tone = 'bg-primary-soft text-primary-text'
+    icon = <RefreshCw size={14} className="animate-spin" />
+  } else if (error) {
+    label = 'Sync error'
+    tone = 'bg-danger-soft text-danger'
+    icon = <AlertTriangle size={14} />
+  } else if (pending) {
+    label = `${pending} baqi`
+    tone = 'bg-warn-soft text-warn'
+    icon = <CloudUpload size={14} />
+  } else {
+    label = 'Synced'
+    tone = 'bg-ok-soft text-ok'
+    icon = <Check size={14} />
+  }
+
+  function onClick() {
+    if (error) window.alert(`Sync nahi hua:\n${error}\n\nAapka data is phone par mehfooz hai. Dobara koshish ho rahi hai.`)
+    void syncNow()
+  }
+
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${tone}`}>
-      {online ? <Check size={14} /> : <CloudOff size={14} />}
-      {online ? 'Synced' : 'Offline'}
-    </span>
+    <button onClick={onClick} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ${tone}`}>
+      {icon}
+      {label}
+    </button>
   )
+}
+
+/** Centered grey text filling the screen (loading / not found). */
+export function FullScreenMessage({ children }: { children: ReactNode }) {
+  return <div className="flex min-h-full flex-col items-center justify-center gap-3 p-6 text-center text-ink-3">{children}</div>
 }
 
 export function CategoryIcon({ category, size = 42 }: { category: Expense['category']; size?: number }) {

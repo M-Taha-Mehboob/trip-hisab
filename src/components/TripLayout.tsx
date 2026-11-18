@@ -1,7 +1,9 @@
-import { ArrowLeft, House, Receipt, Scale, Wallet, type LucideIcon } from 'lucide-react'
-import { Link, NavLink, Navigate, Outlet, useParams } from 'react-router'
+import { ArrowLeft, House, Receipt, Scale, UserPlus, Wallet, type LucideIcon } from 'lucide-react'
+import { useState } from 'react'
+import { Link, NavLink, Outlet, useParams } from 'react-router'
 import { useTripView } from '../data/hooks'
-import { SyncPill } from './ui'
+import InviteSheet from './InviteSheet'
+import { FullScreenMessage, SyncPill } from './ui'
 
 type Tab = { to: string; label: string; icon: LucideIcon; end?: boolean }
 
@@ -16,7 +18,15 @@ const tabs: Tab[] = [
 export default function TripLayout() {
   const { tripId } = useParams()
   const view = useTripView(tripId)
-  if (!view) return <Navigate to="/" replace />
+  const [inviting, setInviting] = useState(false)
+  if (!view) {
+    return (
+      <FullScreenMessage>
+        Ye trip is phone par nahi mili (shayad abhi sync ho rahi hai).
+        <Link to="/" className="font-semibold text-primary-text">Sab trips</Link>
+      </FullScreenMessage>
+    )
+  }
 
   return (
     <div className="mx-auto flex min-h-full max-w-xl flex-col">
@@ -29,6 +39,15 @@ export default function TripLayout() {
             <div className="truncate text-lg font-extrabold tracking-tight">{view.data.trip.name}</div>
           </div>
           <SyncPill />
+          {view.isAdmin && (
+            <button
+              onClick={() => setInviting(true)}
+              aria-label="Doston ko bulayen"
+              className="grid h-9 w-9 place-items-center rounded-xl text-primary-text active:bg-card-2"
+            >
+              <UserPlus size={20} />
+            </button>
+          )}
         </div>
       </header>
       <main className="flex-1 px-4 pt-1 pb-28">
@@ -58,6 +77,7 @@ export default function TripLayout() {
           ))}
         </ul>
       </nav>
+      {inviting && <InviteSheet view={view} onClose={() => setInviting(false)} />}
     </div>
   )
 }
