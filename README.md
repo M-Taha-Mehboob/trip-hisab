@@ -20,13 +20,14 @@ PWA for a group of friends on a trip: record expenses, keep an upfront **Group F
 
 ## Data model
 
-Schema, RLS, invite functions and storage policies: [supabase/migrations/001_init.sql](supabase/migrations/001_init.sql)
+Schema, RLS, invite functions and storage policies: [supabase/migrations/001_init.sql](supabase/migrations/001_init.sql), custom expense types: [002_custom_categories.sql](supabase/migrations/002_custom_categories.sql)
 
 | Table | Purpose |
 |---|---|
 | `profiles` | One per Google login (name, photo) |
 | `trips` | `name`, dates, `status` (active / settled), `invite_code`, `fund_holder_member_id`, `created_by` (owner) |
 | `trip_members` | `display_name`, `role` (admin / member), `sort_order`, `user_id` (null = placeholder until they join) |
+| `trip_categories` | A trip's own expense types (migration 002) |
 | `expenses` | `amount`, `category`, `paid_by_member_id` (null = Group Fund), `date`, `note`, `receipt_path` |
 | `contributions` | Money a member put into the Group Fund |
 | `settlements` | Settle-up transfers marked Paid |

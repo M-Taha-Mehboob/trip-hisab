@@ -4,15 +4,13 @@ import { Link, useParams } from 'react-router'
 import { cardClass } from '../components/styles'
 import { ExpenseRow } from '../components/ui'
 import { useTripView } from '../data/hooks'
-import type { Category } from '../data/types'
-import { CATEGORIES } from '../lib/categories'
 import { formatPKR, formatShortDate } from '../lib/format'
 
 /** All expenses, grouped by day, with a category filter. */
 export default function ExpensesPage() {
   const { tripId } = useParams()
   const view = useTripView(tripId)!
-  const [filter, setFilter] = useState<Category | 'all'>('all')
+  const [filter, setFilter] = useState<string>('all')
   const list = view.data.expenses
     .filter((e) => filter === 'all' || e.category === filter)
     .sort((a, b) => b.date.localeCompare(a.date) || b.created_at.localeCompare(a.created_at))
@@ -36,7 +34,7 @@ export default function ExpensesPage() {
         <button className={chip(filter === 'all')} onClick={() => setFilter('all')}>
           Sab
         </button>
-        {CATEGORIES.map((c) => (
+        {view.categories.filter((c) => !c.custom || view.data.expenses.some((e) => e.category === c.id)).map((c) => (
           <button key={c.id} className={chip(filter === c.id)} onClick={() => setFilter(c.id)}>
             {c.label}
           </button>
@@ -55,7 +53,7 @@ export default function ExpensesPage() {
             <ul className={`${cardClass} ticket-list divide-y divide-line overflow-hidden`}>
               {items.map((e) => (
                 <li key={e.id}>
-                  <ExpenseRow expense={e} payer={view.member(e.paid_by_member_id)} to={`/trip/${tripId}/kharcha/${e.id}`} />
+                  <ExpenseRow expense={e} info={view.category(e.category)} payer={view.member(e.paid_by_member_id)} to={`/trip/${tripId}/kharcha/${e.id}`} />
                 </li>
               ))}
             </ul>

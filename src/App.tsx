@@ -8,6 +8,7 @@ import HisabPage from './pages/HisabPage'
 import HomePage from './pages/HomePage'
 import JoinPage from './pages/JoinPage'
 import LoginPage from './pages/LoginPage'
+import MembersPage from './pages/MembersPage'
 import SettlePage from './pages/SettlePage'
 import TripDashboardPage from './pages/TripDashboardPage'
 
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="fund" element={<FundPage />} />
           <Route path="hisab" element={<HisabPage />} />
           <Route path="hisab/settle" element={<SettlePage />} />
+          <Route path="members" element={<MembersPage />} />
         </Route>
         <Route path="trip/:tripId/kharcha/new" element={<ExpenseFormPage />} />
         <Route path="trip/:tripId/kharcha/:expenseId" element={<ExpenseFormPage />} />

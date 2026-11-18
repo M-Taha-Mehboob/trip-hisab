@@ -3,7 +3,10 @@
 
 export type Role = 'admin' | 'member'
 
-export type Category = 'fuel' | 'hotel' | 'khana' | 'jeep' | 'toll' | 'other'
+export type BuiltinCategory = 'fuel' | 'hotel' | 'khana' | 'jeep' | 'toll' | 'other'
+
+/** A built-in category id, or the id of one of the trip's own categories (TripCategory). */
+export type Category = string
 
 export type TripStatus = 'active' | 'settled'
 
@@ -66,9 +69,22 @@ export interface Settlement {
   paid_at: string
 }
 
+/** An expense type the trip's admin added ("Shopping", "Boating"...). */
+export interface TripCategory {
+  id: string
+  trip_id: string
+  name: string
+  /** Icon key, see CUSTOM_ICONS in src/lib/categories.ts. */
+  icon: string
+  sort_order: number
+  created_at: string
+}
+
 export interface TripData {
   trip: Trip
   members: TripMember[]
+  /** The trip's own expense types (not the six built-in ones). */
+  categories: TripCategory[]
   expenses: Expense[]
   contributions: Contribution[]
   settlements: Settlement[]

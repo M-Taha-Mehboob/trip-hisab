@@ -1,4 +1,4 @@
-import { ArrowLeft, House, Receipt, Scale, UserPlus, Wallet, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, House, Receipt, Scale, UserPlus, Users, Wallet, type LucideIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useParams } from 'react-router'
 import { useTripView } from '../data/hooks'
@@ -39,6 +39,9 @@ export default function TripLayout() {
             <div className="truncate text-lg font-extrabold tracking-tight">{view.data.trip.name}</div>
           </div>
           <SyncPill />
+          <Link to={`/trip/${tripId}/members`} aria-label="Members" className="grid h-9 w-9 place-items-center rounded-xl text-ink-2 active:bg-card-2">
+            <Users size={20} />
+          </Link>
           {view.isAdmin && (
             <button
               onClick={() => setInviting(true)}

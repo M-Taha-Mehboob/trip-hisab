@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { Contribution, Expense, Settlement, Trip, TripMember } from './types'
+import type { Contribution, Expense, Settlement, Trip, TripCategory, TripMember } from './types'
 
 // Offline copy of the trips this user can see (IndexedDB via Dexie). Pages read it through
 // DataProvider; all writes go through ./store.ts; ../sync/sync.ts pushes and pulls it.
@@ -16,6 +16,7 @@ export interface SyncFields {
 
 export type LocalTrip = Trip & SyncFields & { created_by: string }
 export type LocalMember = TripMember & SyncFields
+export type LocalCategory = TripCategory & SyncFields
 export type LocalExpense = Expense & SyncFields
 export type LocalContribution = Contribution & SyncFields
 export type LocalSettlement = Settlement & SyncFields
@@ -33,6 +34,7 @@ export interface LocalReceipt {
 export type TripDB = Dexie & {
   trips: EntityTable<LocalTrip, 'id'>
   trip_members: EntityTable<LocalMember, 'id'>
+  trip_categories: EntityTable<LocalCategory, 'id'>
   expenses: EntityTable<LocalExpense, 'id'>
   contributions: EntityTable<LocalContribution, 'id'>
   settlements: EntityTable<LocalSettlement, 'id'>
@@ -50,6 +52,8 @@ export function openTripDB(userId: string): TripDB {
     settlements: 'id, trip_id, _dirty',
     receipts: 'path, pending',
   })
+  // 002_custom_categories.sql
+  db.version(2).stores({ trip_categories: 'id, trip_id, _dirty' })
   return db
 }
 

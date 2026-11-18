@@ -74,6 +74,7 @@ const hunzaTrip: TripData = {
     created_at: at,
   },
   members: hunzaMembers,
+  categories: [],
   contributions: contributions(hunza, hunzaMembers, 10_000, '2026-11-04'),
   expenses: [
     // Group Fund: 62,000
@@ -106,6 +107,7 @@ const naranTrip: TripData = {
     created_at: '2025-07-10T09:00:00Z',
   },
   members: naranMembers,
+  categories: [],
   contributions: contributions(naran, naranMembers, 8_000, '2025-07-11'),
   expenses: [
     expense(naran, 9_000, 'fuel', null, '2025-07-12', 'Fuel'),
@@ -130,6 +132,7 @@ const murreeTrip: TripData = {
     created_at: '2024-12-25T09:00:00Z',
   },
   members: murreeMembers,
+  categories: [],
   contributions: contributions(murree, murreeMembers, 5_000, '2024-12-26'),
   expenses: [
     expense(murree, 4_000, 'fuel', null, '2024-12-27', 'Fuel'),

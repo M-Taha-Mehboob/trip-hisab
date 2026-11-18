@@ -1,13 +1,12 @@
-import { Camera, Trash2, X } from 'lucide-react'
+import { Camera, Plus, Trash2, X } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
 import { buttonDanger, buttonPrimary, inputClass, labelClass } from '../components/styles'
+import NewCategorySheet from '../components/NewCategorySheet'
 import ReceiptPhoto from '../components/ReceiptPhoto'
 import { Avatar } from '../components/ui'
 import { useTripView } from '../data/hooks'
 import { deleteExpense, saveExpense } from '../data/store'
-import type { Category } from '../data/types'
-import { CATEGORIES } from '../lib/categories'
 import { formatNumber, formatPKR, parseAmount, todayISO } from '../lib/format'
 import { compressImage } from '../lib/image'
 import { objectUrlFor } from '../lib/objectUrl'
@@ -22,7 +21,7 @@ export default function ExpenseFormPage() {
   const readOnly = !view?.isAdmin || view.data.trip.status !== 'active'
 
   const [amountText, setAmountText] = useState(existing ? formatNumber(existing.amount) : '')
-  const [category, setCategory] = useState<Category>(existing?.category ?? 'khana')
+  const [category, setCategory] = useState<string>(existing?.category ?? 'khana')
   const [fromFund, setFromFund] = useState(existing ? existing.paid_by_member_id === null : true)
   const [payerId, setPayerId] = useState<string | null>(existing?.paid_by_member_id ?? view?.me?.id ?? null)
   const [date, setDate] = useState(existing?.date ?? todayISO())
@@ -34,6 +33,7 @@ export default function ExpenseFormPage() {
   const hasPhoto = photo instanceof Blob || savedPath !== null
   const [photoBusy, setPhotoBusy] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [newType, setNewType] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   if (!view || (!isNew && !existing) || (isNew && readOnly)) return <Navigate to={`/trip/${tripId ?? ''}`} replace />
@@ -127,7 +127,7 @@ export default function ExpenseFormPage() {
           <div>
             <div className={labelClass}>Category</div>
             <div className="grid grid-cols-3 gap-2">
-              {CATEGORIES.map(({ id, label, icon: Icon, tone }) => {
+              {view.categories.map(({ id, label, icon: Icon, tone }) => {
                 const active = category === id
                 return (
                   <button
@@ -142,10 +142,22 @@ export default function ExpenseFormPage() {
                     <span className={`grid h-10 w-10 place-items-center rounded-full ${tone}`}>
                       <Icon size={20} />
                     </span>
-                    {label}
+                    <span className="max-w-full truncate px-1">{label}</span>
                   </button>
                 )
               })}
+              {!readOnly && (
+                <button
+                  type="button"
+                  onClick={() => setNewType(true)}
+                  className="flex flex-col items-center gap-1.5 rounded-2xl border border-dashed border-line bg-card py-3 text-sm font-semibold text-ink-2"
+                >
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-card-2">
+                    <Plus size={20} />
+                  </span>
+                  Nayi type
+                </button>
+              )}
             </div>
           </div>
 
@@ -262,6 +274,14 @@ export default function ExpenseFormPage() {
           </div>
         )}
       </form>
+      {newType && (
+        <NewCategorySheet
+          tripId={tripId!}
+          takenNames={view.categories.map((c) => c.label.toLowerCase())}
+          onCreated={setCategory}
+          onClose={() => setNewType(false)}
+        />
+      )}
     </div>
   )
 }

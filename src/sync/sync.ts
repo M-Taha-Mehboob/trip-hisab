@@ -14,17 +14,22 @@ import { RECEIPTS_BUCKET } from '../lib/supabase'
 // receipts: upload / delete queued photos.
 // Deletions travel as deleted_at; trips you lost access to are removed from the phone.
 
-const CHILD_TABLES = ['trip_members', 'expenses', 'contributions', 'settlements'] as const
+// Order matters for push: members and categories before the rows that point at them.
+const CHILD_TABLES = ['trip_members', 'trip_categories', 'expenses', 'contributions', 'settlements'] as const
 type ChildTable = (typeof CHILD_TABLES)[number]
 type SyncTable = 'trips' | ChildTable
 
 const PUSH_BATCH = 200
 const PULL_PAGE = 1000
 
-/** Never sent on update: set once, or changed only through join_trip / the owner. */
+/**
+ * Never sent on update: set once, or changed only through join_trip. A member's role is sent only by
+ * the trip owner (the only one allowed to change it), so an admin's stale copy can't block the sync.
+ */
 const UPDATE_SKIP: Record<SyncTable, string[]> = {
   trips: ['created_by', 'created_at', 'updated_at'],
-  trip_members: ['user_id', 'role', 'trip_id', 'created_at', 'updated_at'],
+  trip_members: ['user_id', 'trip_id', 'created_at', 'updated_at'],
+  trip_categories: ['created_by', 'created_at', 'updated_at'],
   expenses: ['created_by', 'created_at', 'updated_at'],
   contributions: ['created_by', 'created_at', 'updated_at'],
   settlements: ['created_by', 'created_at', 'updated_at'],
@@ -56,7 +61,7 @@ export async function syncNow(db: TripDB, client: SupabaseClient, userId: string
   if (!data.session) throw new Error('Login khatam ho gaya: logout karke dobara Google se login karein.')
   if (data.session.user.id !== userId) throw new Error('Kisi aur account se login hai.')
 
-  for (const table of ['trips', ...CHILD_TABLES] as const) await push(db, client, table)
+  for (const table of ['trips', ...CHILD_TABLES] as const) await push(db, client, table, userId)
   await syncReceipts(db, client)
   await pull(db, client, userId)
 }
@@ -67,7 +72,10 @@ function payloadOf(row: Row, skip: string[] = []) {
   return out
 }
 
-async function push(db: TripDB, client: SupabaseClient, table: SyncTable) {
+/** True when the Supabase project doesn't have this table yet (a migration not run). */
+const isMissingTable = (error: { code?: string } | null) => error?.code === 'PGRST205' || error?.code === '42P01'
+
+async function push(db: TripDB, client: SupabaseClient, table: SyncTable, userId: string) {
   const local = db.table<Row, string>(table)
   const dirty = await local.where('_dirty').equals(1).toArray()
   if (dirty.length === 0) return
@@ -83,13 +91,19 @@ async function push(db: TripDB, client: SupabaseClient, table: SyncTable) {
       .from(table)
       .upsert(batch.map((r) => payloadOf(r)), { onConflict: 'id', ignoreDuplicates: true })
       .select('id')
+    if (error && table === 'trip_categories' && isMissingTable(error)) {
+      throw new Error('Nayi kharcha types ke liye Supabase mein 002_custom_categories.sql chalani hai.')
+    }
     if (error) throw new Error(`Upload ${table} failed: ${error.message}`)
     const inserted = new Set((data as { id: string }[]).map((r) => r.id))
     for (const row of batch) (inserted.has(row.id) ? done : toUpdate).push(row)
   }
 
+  const owned = new Set((await db.trips.toArray()).filter((t) => t.created_by === userId).map((t) => t.id))
   for (const row of toUpdate) {
-    const { error } = await client.from(table).update(payloadOf(row, UPDATE_SKIP[table])).eq('id', row.id)
+    const skip = [...UPDATE_SKIP[table]]
+    if (table === 'trip_members' && !owned.has(row.trip_id ?? '')) skip.push('role')
+    const { error } = await client.from(table).update(payloadOf(row, skip)).eq('id', row.id)
     if (error) throw new Error(`Upload ${table} failed: ${error.message}`)
     done.push(row)
   }
@@ -161,6 +175,7 @@ async function pullChild(db: TripDB, client: SupabaseClient, userId: string, tab
       query = query.or(`updated_at.gt."${cursor.ts}",and(updated_at.eq."${cursor.ts}",id.gt.${cursor.id})`)
     }
     const { data, error } = await query
+    if (error && table === 'trip_categories' && isMissingTable(error)) return // 002 not run yet: nothing to pull
     if (error) throw new Error(`Download ${table} failed: ${error.message}`)
     const rows = data as Row[]
     if (rows.length === 0) break

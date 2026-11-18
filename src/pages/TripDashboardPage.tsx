@@ -52,7 +52,7 @@ export default function TripDashboardPage() {
         <ul className={`${cardClass} ticket-list divide-y divide-line overflow-hidden`}>
           {recent.map((e) => (
             <li key={e.id}>
-              <ExpenseRow expense={e} payer={view.member(e.paid_by_member_id)} to={`/trip/${tripId}/kharcha/${e.id}`} />
+              <ExpenseRow expense={e} info={view.category(e.category)} payer={view.member(e.paid_by_member_id)} to={`/trip/${tripId}/kharcha/${e.id}`} />
             </li>
           ))}
         </ul>

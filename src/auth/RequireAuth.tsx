@@ -43,9 +43,10 @@ function TripsGate({ db, children }: { db: TripDB; children: ReactNode }) {
 }
 
 async function loadTrips(db: TripDB): Promise<TripData[]> {
-  const [trips, members, expenses, contributions, settlements] = await Promise.all([
+  const [trips, members, categories, expenses, contributions, settlements] = await Promise.all([
     db.trips.toArray(),
     db.trip_members.toArray(),
+    db.trip_categories.toArray(),
     db.expenses.toArray(),
     db.contributions.toArray(),
     db.settlements.toArray(),
@@ -56,6 +57,7 @@ async function loadTrips(db: TripDB): Promise<TripData[]> {
     return (tripId: string) => map.get(tripId) ?? []
   }
   const m = byTrip(members)
+  const cat = byTrip(categories)
   const e = byTrip(expenses)
   const c = byTrip(contributions)
   const s = byTrip(settlements)
@@ -65,6 +67,7 @@ async function loadTrips(db: TripDB): Promise<TripData[]> {
     .map((trip) => ({
       trip,
       members: m(trip.id).sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)),
+      categories: cat(trip.id).sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at)),
       expenses: e(trip.id),
       contributions: c(trip.id),
       settlements: s(trip.id),

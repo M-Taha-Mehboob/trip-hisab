@@ -2,7 +2,7 @@ import { AlertTriangle, Check, CloudOff, CloudUpload, Crown, Image as ImageIcon,
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import type { Expense, TripMember } from '../data/types'
-import { categoryInfo } from '../lib/categories'
+import type { CategoryInfo } from '../lib/categories'
 import { useSync } from '../sync/context'
 import { formatPKR, formatShortDate, formatSigned, initials } from '../lib/format'
 
@@ -67,8 +67,8 @@ export function FullScreenMessage({ children }: { children: ReactNode }) {
   return <div className="flex min-h-full flex-col items-center justify-center gap-3 p-6 text-center text-ink-3">{children}</div>
 }
 
-export function CategoryIcon({ category, size = 42 }: { category: Expense['category']; size?: number }) {
-  const { icon: Icon, tone } = categoryInfo(category)
+export function CategoryIcon({ info, size = 42 }: { info: CategoryInfo; size?: number }) {
+  const { icon: Icon, tone } = info
   return (
     <span style={{ width: size, height: size }} className={`grid shrink-0 place-items-center rounded-full ${tone}`}>
       <Icon size={size * 0.48} strokeWidth={2} />
@@ -94,11 +94,21 @@ export function BalancePill({ amount }: { amount: number }) {
   return <span className={`rounded-full px-2.5 py-1 text-sm font-bold whitespace-nowrap tabular-nums ${tone}`}>{formatSigned(amount)}</span>
 }
 
-export function ExpenseRow({ expense, payer, to }: { expense: Expense; payer: TripMember | undefined; to: string }) {
-  const { label } = categoryInfo(expense.category)
+export function ExpenseRow({
+  expense,
+  info,
+  payer,
+  to,
+}: {
+  expense: Expense
+  info: CategoryInfo
+  payer: TripMember | undefined
+  to: string
+}) {
+  const { label } = info
   return (
     <Link to={to} className="flex items-center gap-3 px-4 py-3 active:bg-card-2">
-      <CategoryIcon category={expense.category} />
+      <CategoryIcon info={info} />
       <div className="min-w-0 flex-1">
         <div className="truncate font-semibold">{expense.note || label}</div>
         <div className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-3">

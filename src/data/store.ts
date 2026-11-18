@@ -24,7 +24,7 @@ function fresh(): SyncFields {
   return { updated_at: nowISO(), deleted_at: null, _dirty: 1, _new: 1 }
 }
 
-type ChildTable = 'trip_members' | 'expenses' | 'contributions' | 'settlements'
+type ChildTable = 'trip_members' | 'trip_categories' | 'expenses' | 'contributions' | 'settlements'
 type Table = 'trips' | ChildTable
 
 // Untyped on purpose (Dexie's generics don't compose here); the exported actions are typed.
@@ -133,6 +133,56 @@ export function setTripStatus(tripId: string, status: 'active' | 'settled', endD
       await touch('trips', tripId, { status, end_date: endDate ?? trip?.end_date ?? null })
     })(),
   )
+}
+
+// ---- Expense types (the trip's own; built-in ones live in src/lib/categories.ts) ----
+
+/** Adds a type to the trip and returns its id (pick it on the expense right away). */
+export async function addCategory(tripId: string, name: string, icon: string): Promise<string> {
+  const { db } = ctx()
+  const existing = await db.trip_categories.where('trip_id').equals(tripId).toArray()
+  const id = crypto.randomUUID()
+  await db.trip_categories.add({
+    ...fresh(),
+    id,
+    trip_id: tripId,
+    name,
+    icon,
+    sort_order: Math.max(-1, ...existing.map((c) => c.sort_order)) + 1,
+    created_at: nowISO(),
+  })
+  return id
+}
+
+// ---- Members (admin; making admins is owner-only, enforced by the server too) ----
+
+/** A placeholder member: the person links it to their login later through the invite link. */
+export async function addMember(tripId: string, name: string) {
+  const { db } = ctx()
+  const existing = await db.trip_members.where('trip_id').equals(tripId).toArray()
+  await db.trip_members.add({
+    ...fresh(),
+    id: crypto.randomUUID(),
+    trip_id: tripId,
+    user_id: null,
+    display_name: name,
+    role: 'member',
+    sort_order: Math.max(-1, ...existing.map((m) => m.sort_order)) + 1,
+    avatar_url: null,
+  })
+}
+
+export function renameMember(memberId: string, name: string) {
+  report(touch('trip_members', memberId, { display_name: name }))
+}
+
+export function setMemberRole(memberId: string, role: 'admin' | 'member') {
+  report(touch('trip_members', memberId, { role }))
+}
+
+/** Only for members with no money in the hisab (the page checks); also removes their access. */
+export function removeMember(memberId: string) {
+  report(softDelete('trip_members', memberId))
 }
 
 // ---- New trip ----
