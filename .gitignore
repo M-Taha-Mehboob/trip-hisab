@@ -20,3 +20,6 @@ dist-ssr
 
 # PWA dev build output
 dev-dist
+
+# Supabase CLI local state
+supabase/.temp/
