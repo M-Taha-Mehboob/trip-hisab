@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import Modal from '../components/Modal'
 import SettingsSheet from '../components/SettingsSheet'
+import { PushBanner } from '../components/PushToggle'
 import { buttonPrimary, cardClass, inputClass, labelClass } from '../components/styles'
 import TripHero from '../components/TripHero'
 import { SyncPill } from '../components/ui'
@@ -40,6 +41,8 @@ export default function HomePage() {
           </button>
         </div>
       </header>
+
+      <PushBanner />
 
       {active.map((v) => {
         const { trip } = v.data

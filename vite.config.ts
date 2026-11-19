@@ -13,6 +13,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Own service worker (src/sw.ts) so it can show push notifications.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       includeAssets: ['favicon.svg', 'favicon-glacier.svg', 'favicon-sunset.svg', 'favicon-night.svg', 'apple-touch-icon.png'],
       manifest: {
         name: 'Trip Hisab',
@@ -30,11 +34,9 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
-      workbox: {
+      injectManifest: {
         // Precache fonts and icons too (default is js/css/html only), so the app looks right offline.
         globPatterns: ['**/*.{js,css,html,woff2,png,svg,webmanifest}'],
-        // SPA: serve index.html for client-side routes when offline.
-        navigateFallback: '/index.html',
       },
     }),
   ],

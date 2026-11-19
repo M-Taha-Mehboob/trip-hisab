@@ -1,4 +1,5 @@
 import { LogOut } from 'lucide-react'
+import PushToggle from './PushToggle'
 import { useAuth } from '../auth/context'
 import { useViewAsMember } from '../data/hooks'
 import { useSession } from '../data/session'
@@ -65,6 +66,8 @@ export default function SettingsSheet({ onClose }: { onClose: () => void }) {
         </div>
         <p className="mt-1.5 px-1 text-xs text-ink-3">Auto: din mein Glacier, 4:30 se Sunset, 7:30 se Raat. Sirf is phone par.</p>
       </div>
+
+      <PushToggle />
 
       <label className="flex items-center justify-between gap-3 rounded-2xl border border-line px-4 py-3">
         <span>

@@ -40,6 +40,23 @@ Members see everything in their trips; only admins write. The owner is always ad
 2. Supabase + Google login: follow [docs/supabase-google-setup.md](docs/supabase-google-setup.md)
 3. Copy `.env.example` to `.env.local` and fill in the two keys (never the service_role key).
 
+## Phone notifications
+
+"Aap ek naye trip mein add ho gaye: <trip>. Enjoy!" when the owner adds someone who already has a login to a trip.
+Phone saves its Web Push subscription (`src/lib/push.ts`, Settings / Home banner) -> trigger on `trip_members`
+insert (migration 006) -> Edge Function `supabase/functions/notify-new-trip` -> push -> `src/sw.ts` shows it.
+iPhone: only when the app is installed (Add to Home Screen, iOS 16.4+).
+
+One-time setup:
+1. Keys: `npx web-push generate-vapid-keys`. Public key -> `VITE_VAPID_PUBLIC_KEY` in `.env.local` and in Cloudflare
+   Pages (Settings -> Variables and Secrets), then redeploy. Private key -> step 3 only.
+2. Run `006_push_notifications.sql`, then in the SQL Editor (your project URL, and any long random text):
+   `select vault.create_secret('https://<ref>.supabase.co', 'project_url');`
+   `select vault.create_secret('<random>', 'push_hook_secret');`
+3. Supabase CLI: `npx supabase login`, `npx supabase link --project-ref <ref>`, then
+   `npx supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:<you> PUSH_HOOK_SECRET=<same random>`
+   and `npx supabase functions deploy notify-new-trip --no-verify-jwt --use-api`.
+
 ## Commands
 
 ```bash
