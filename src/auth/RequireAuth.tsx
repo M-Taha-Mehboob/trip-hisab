@@ -6,6 +6,7 @@ import { SessionContext, TripsContext } from '../data/session'
 import { bindStore } from '../data/store'
 import type { TripData } from '../data/types'
 import { FullScreenMessage } from '../components/ui'
+import NewTripWelcome from '../components/NewTripWelcome'
 import SyncProvider from '../sync/SyncProvider'
 import { useAuth } from './context'
 
@@ -29,6 +30,7 @@ export default function RequireAuth() {
       <SyncProvider>
         <TripsGate db={session.db}>
           <Outlet />
+          <NewTripWelcome />
         </TripsGate>
       </SyncProvider>
     </SessionContext.Provider>

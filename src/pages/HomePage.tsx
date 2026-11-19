@@ -1,5 +1,5 @@
-import { ChevronRight, Mountain, Plus, Users } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Check, ChevronRight, Mountain, Plus, Users } from 'lucide-react'
+import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import Modal from '../components/Modal'
 import SettingsSheet from '../components/SettingsSheet'
@@ -7,9 +7,10 @@ import { buttonPrimary, cardClass, inputClass, labelClass } from '../components/
 import TripHero from '../components/TripHero'
 import { SyncPill } from '../components/ui'
 import { UserAvatar } from '../components/UserAvatar'
+import { Avatar } from '../components/ui'
 import { useTripViews } from '../data/hooks'
-import { useSession } from '../data/session'
-import { createTrip } from '../data/store'
+import { useSession, useTripsData } from '../data/session'
+import { createTrip, type PastPerson } from '../data/store'
 import { formatDateRange, formatPKR, todayISO } from '../lib/format'
 
 export default function HomePage() {
@@ -131,6 +132,17 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
     .map((s) => s.trim())
     .filter(Boolean)
 
+  const pastPeople = usePastPeople()
+  const [picked, setPicked] = useState<Set<string>>(() => new Set(pastPeople.map((p) => p.userId)))
+  const togglePicked = (id: string) =>
+    setPicked((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  const pickedPeople = pastPeople.filter((p) => picked.has(p.userId))
+
   const [busy, setBusy] = useState(false)
 
   async function save(e: FormEvent) {
@@ -138,7 +150,7 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
     if (!name.trim() || !myName.trim() || busy) return
     setBusy(true)
     try {
-      const id = await createTrip({ name: name.trim(), startDate, myName: myName.trim(), myAvatarUrl: user.avatarUrl, memberNames })
+      const id = await createTrip({ name: name.trim(), startDate, myName: myName.trim(), myAvatarUrl: user.avatarUrl, pastPeople: pickedPeople, memberNames })
       navigate(`/trip/${id}`)
     } catch (err) {
       window.alert(`Trip nahi bani: ${err instanceof Error ? err.message : String(err)}`)
@@ -163,8 +175,34 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
             <input id="trip-me" className={inputClass} value={myName} onChange={(e) => setMyName(e.target.value)} />
           </div>
         </div>
+        {pastPeople.length > 0 && (
+          <div>
+            <div className={labelClass}>Pichli trips ke dost</div>
+            <div className="flex flex-wrap gap-2">
+              {pastPeople.map((p) => {
+                const on = picked.has(p.userId)
+                return (
+                  <button
+                    key={p.userId}
+                    type="button"
+                    onClick={() => togglePicked(p.userId)}
+                    aria-pressed={on}
+                    className={`flex items-center gap-1.5 rounded-full border py-1 pr-3 pl-1 text-sm font-medium ${
+                      on ? 'border-primary bg-primary-soft text-primary-text' : 'border-line bg-card text-ink-2'
+                    }`}
+                  >
+                    <Avatar name={p.name} size={26} />
+                    {p.name}
+                    {on && <Check size={14} />}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="mt-1.5 text-xs text-ink-3">Tick wale log seedha trip mein aa jayenge, link bhejne ki zaroorat nahi.</p>
+          </div>
+        )}
         <div>
-          <label className={labelClass} htmlFor="trip-members">Baqi members (har line mein ek naam)</label>
+          <label className={labelClass} htmlFor="trip-members">Naye members (har line mein ek naam)</label>
           <textarea
             id="trip-members"
             rows={5}
@@ -174,7 +212,7 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
             placeholder={'Ali\nHamza\nUsman'}
           />
           <p className="mt-1.5 text-xs text-ink-3">
-            {memberNames.length + 1} members. Ye log invite link se Google login karke apne naam se jud jayenge.
+            {memberNames.length + pickedPeople.length + 1} members. Naye log invite link se Google login karke apne naam se jud jayenge.
           </p>
         </div>
         <button className={`${buttonPrimary} w-full py-3`} disabled={!name.trim() || !myName.trim() || busy}>
@@ -183,4 +221,18 @@ function NewTripSheet({ onClose }: { onClose: () => void }) {
       </form>
     </Modal>
   )
+}
+
+/** Everyone with a login who was in one of my trips (not me), newest name first, one entry per person. */
+function usePastPeople(): PastPerson[] {
+  const trips = useTripsData()
+  const { userId } = useSession()
+  return useMemo(() => {
+    const seen = new Map<string, PastPerson>()
+    for (const t of trips) // newest trip first, so its name wins
+      for (const m of t.members)
+        if (m.user_id && m.user_id !== userId && !seen.has(m.user_id))
+          seen.set(m.user_id, { userId: m.user_id, name: m.display_name, avatarUrl: m.avatar_url })
+    return [...seen.values()].sort((a, b) => a.name.localeCompare(b.name))
+  }, [trips, userId])
 }

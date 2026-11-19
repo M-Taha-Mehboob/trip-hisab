@@ -193,26 +193,42 @@ function inviteCode() {
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('')
 }
 
-/** Creates the trip with you as owner + admin and the others as placeholders. Returns the trip id. */
+/** Someone from an earlier trip who already logged in (userId set), offered when making a new trip. */
+export interface PastPerson {
+  userId: string
+  name: string
+  avatarUrl: string | null
+}
+
+/**
+ * Creates the trip with you as owner + admin, `pastPeople` already linked to their logins (allowed by
+ * migration 003, so the trip just shows up on their phones) and `memberNames` as placeholders.
+ * Returns the trip id.
+ */
 export async function createTrip(input: {
   name: string
   startDate: string
   myName: string
   myAvatarUrl: string | null
+  pastPeople?: PastPerson[]
   memberNames: string[]
 }): Promise<string> {
   const { db, userId } = ctx()
   const tripId = crypto.randomUUID()
-  const names = [input.myName, ...input.memberNames]
-  const members: (TripMember & SyncFields)[] = names.map((name, i) => ({
+  const people = [
+    { userId: userId as string | null, name: input.myName, avatarUrl: input.myAvatarUrl },
+    ...(input.pastPeople ?? []),
+    ...input.memberNames.map((name) => ({ userId: null, name, avatarUrl: null })),
+  ]
+  const members: (TripMember & SyncFields)[] = people.map((p, i) => ({
     ...fresh(),
     id: crypto.randomUUID(),
     trip_id: tripId,
-    user_id: i === 0 ? userId : null,
-    display_name: name,
+    user_id: p.userId,
+    display_name: p.name,
     role: i === 0 ? 'admin' : 'member',
     sort_order: i,
-    avatar_url: i === 0 ? input.myAvatarUrl : null,
+    avatar_url: p.avatarUrl,
   }))
   await db.transaction('rw', db.trips, db.trip_members, async () => {
     await db.trips.add({
