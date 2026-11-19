@@ -1,12 +1,12 @@
 import { Crown, Pencil, ShieldCheck, Trash2, UserPlus } from 'lucide-react'
 import { useState, type FormEvent, type ReactNode } from 'react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 import Modal from '../components/Modal'
-import { buttonPrimary, buttonSecondary, cardClass, iconButton, inputClass, labelClass } from '../components/styles'
+import { buttonDanger, buttonPrimary, buttonSecondary, cardClass, iconButton, inputClass, labelClass } from '../components/styles'
 import { Avatar, HolderBadge, SectionTitle } from '../components/ui'
 import { useTripView, type TripView } from '../data/hooks'
 import type { LocalTrip } from '../data/db'
-import { addMember, removeMember, renameMember, setMemberRole } from '../data/store'
+import { addMember, deleteTrip, removeMember, renameMember, setMemberRole } from '../data/store'
 import type { TripMember } from '../data/types'
 
 /** Who is in the trip. Admins add / rename / remove; the owner also makes admins. */
@@ -20,6 +20,7 @@ export default function MembersPage() {
   const [renaming, setRenaming] = useState<TripMember | null>(null)
   const [newName, setNewName] = useState('')
   const [busy, setBusy] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const names = data.members.map((m) => m.display_name.trim().toLowerCase())
   const trimmed = newName.trim()
@@ -89,8 +90,50 @@ export default function MembersPage() {
         sakta hai.
       </p>
 
+      {isOwner && (
+        <button onClick={() => setDeleting(true)} className={`${buttonDanger} mt-8 w-full py-3`}>
+          <Trash2 size={18} /> Trip delete karo
+        </button>
+      )}
+
       {renaming && <RenameSheet member={renaming} taken={names} onClose={() => setRenaming(null)} />}
+      {deleting && <DeleteTripSheet tripId={data.trip.id} tripName={data.trip.name} onClose={() => setDeleting(false)} />}
     </>
+  )
+}
+
+/** Owner only. Type the trip's name to confirm; soft delete, so it leaves every member's phone. */
+function DeleteTripSheet({ tripId, tripName, onClose }: { tripId: string; tripName: string; onClose: () => void }) {
+  const navigate = useNavigate()
+  const [typed, setTyped] = useState('')
+  const ok = typed.trim().toLowerCase() === tripName.trim().toLowerCase()
+
+  async function remove(e: FormEvent) {
+    e.preventDefault()
+    if (!ok) return
+    try {
+      await deleteTrip(tripId)
+      navigate('/', { replace: true })
+    } catch (err) {
+      window.alert(`Trip delete nahi hui: ${err instanceof Error ? err.message : String(err)}`)
+    }
+  }
+
+  return (
+    <Modal title="Trip delete karein?" onClose={onClose}>
+      <form onSubmit={remove} className="space-y-4">
+        <p className="text-sm text-ink-2">
+          <b>{tripName}</b> ke saare kharche, Group Fund aur hisab sab members ke phone se hat jayenge.
+        </p>
+        <div>
+          <label className={labelClass} htmlFor="delete-confirm">Confirm karne ke liye trip ka naam likhein</label>
+          <input id="delete-confirm" className={inputClass} value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={tripName} autoFocus />
+        </div>
+        <button className={`${buttonDanger} w-full py-3`} disabled={!ok}>
+          <Trash2 size={18} /> Haan, delete karo
+        </button>
+      </form>
+    </Modal>
   )
 }
 

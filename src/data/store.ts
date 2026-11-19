@@ -279,3 +279,10 @@ export function useViewAsMemberPref() {
     readViewAsMember,
   )
 }
+
+// ---- Delete trip (owner only; migration 005 enforces it) ----
+
+/** Soft delete: sync carries deleted_at to every member's phone, and the trip can be restored in Supabase. */
+export async function deleteTrip(tripId: string) {
+  await touch('trips', tripId, { deleted_at: nowISO() })
+}
